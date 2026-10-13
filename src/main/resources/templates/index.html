@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow Studio &bull; Next-Gen Gamified Workspace</title>
+  <link rel="image/png" icon="/todoog.png">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Bangers (for comic explosion) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Bootstrap 5 & FullCalendar -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
+
+  <style>
+    :root {
+      --primary-grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+      --card-radius: 24px;
+      --border-subtle: rgba(226, 232, 240, 0.8);
+      --font-main: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-main);
+      min-height: 100vh;
+      background: radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.04) 0%, transparent 40%),
+                  radial-gradient(circle at 90% 90%, rgba(217, 70, 239, 0.04) 0%, transparent 40%),
+                  var(--bs-body-bg);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* Screen Shake Keyframe for Meteor Strike FX */
+    @keyframes screenShake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-10px, 12px) rotate(-1.5deg); }
+      30% { transform: translate(12px, -10px) rotate(1.5deg); }
+      45% { transform: translate(-12px, -8px) rotate(-1deg); }
+      60% { transform: translate(10px, 10px) rotate(1deg); }
+      75% { transform: translate(-6px, 4px) rotate(-0.5deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    .screen-shake-active {
+      animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    .navbar-glass {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    [data-bs-theme="dark"] .navbar-glass {
+      background: rgba(15, 23, 42, 0.75);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand-logo-glow {
+      width: 44px;
+      height: 44px;
+      background: var(--primary-grad);
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.3rem;
+      box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-create-task {
+      background: var(--primary-grad);
+      color: #fff;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 30px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px -4px rgba(99, 102, 241, 0.4);
+      transition: all 0.25s ease;
+    }
+    .btn-create-task:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -4px rgba(99, 102, 241, 0.55);
+      color: #fff;
+    }
+
+    .user-badge {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.18);
+      border-radius: 30px;
+      padding: 6px 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .luxury-card {
+      border-radius: var(--card-radius);
+      border: 1px solid var(--border-subtle);
+      background: var(--bs-card-bg);
+      box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(10px);
+    }
+    [data-bs-theme="dark"] .luxury-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.25);
+    }
+
+    .metric-card {
+      padding: 20px 24px;
+      border-radius: 20px;
+    }
+    .metric-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .motivator-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(217, 70, 239, 0.08));
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 20px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .persona-select-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      border-radius: 20px;
+      padding: 5px 12px;
+      border: 1px solid rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+
+    @keyframes urgent-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .pulse-urgent {
+      animation: urgent-pulse 2s infinite;
+      border: 1px solid #ef4444 !important;
+    }
+
+    .countdown-chip {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .chip-expired { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .chip-critical { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+    .chip-upcoming { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+
+    .view-switcher-pill {
+      background: var(--bs-secondary-bg);
+      border-radius: 30px;
+      padding: 4px;
+      display: inline-flex;
+      border: 1px solid var(--border-subtle);
+    }
+    .view-switcher-pill .btn {
+      border-radius: 24px;
+      padding: 6px 18px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      color: var(--bs-secondary-color);
+      transition: all 0.2s ease;
+    }
+    .view-switcher-pill .btn.active {
+      background: var(--primary-grad);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .matrix-quadrant {
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bs-body-bg);
+      padding: 20px;
+      height: 100%;
+      min-height: 290px;
+      display: flex;
+      flex-direction: column;
+    }
+    .quadrant-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid;
+    }
+    .q1-border { border-color: #f43f5e !important; }
+    .q2-border { border-color: #3b82f6 !important; }
+    .q3-border { border-color: #f59e0b !important; }
+    .q4-border { border-color: #64748b !important; }
+
+    .matrix-task-item {
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bs-card-bg);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .matrix-task-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    #calendar { padding: 8px; }
+    .fc .fc-toolbar-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .fc .fc-button {
+      border-radius: 12px !important;
+      padding: 7px 16px !important;
+      font-weight: 600 !important;
+      font-size: 0.88rem !important;
+      text-transform: capitalize !important;
+      border: 1px solid var(--border-subtle) !important;
+    }
+    .fc .fc-button-primary {
+      background-color: transparent !important;
+      color: var(--bs-body-color) !important;
+    }
+    .fc .fc-button-primary:hover {
+      background-color: rgba(99, 102, 241, 0.1) !important;
+      color: #6366f1 !important;
+    }
+    .fc .fc-button-primary:not(:disabled).fc-button-active {
+      background: var(--primary-grad) !important;
+      color: #fff !important;
+      border-color: transparent !important;
+    }
+    .fc-theme-standard th {
+      border: none !important;
+      padding: 14px 0 !important;
+      font-weight: 700 !important;
+      color: #64748b !important;
+      text-transform: uppercase !important;
+      font-size: 0.75rem !important;
+    }
+    .fc-theme-standard td { border-color: rgba(226, 232, 240, 0.6) !important; }
+    [data-bs-theme="dark"] .fc-theme-standard td { border-color: rgba(255, 255, 255, 0.05) !important; }
+
+    .fc-daygrid-day-frame {
+      min-height: 110px !important;
+      border-radius: 12px;
+      margin: 2px;
+    }
+    .fc-daygrid-day-frame:hover {
+      background: rgba(99, 102, 241, 0.03);
+      cursor: pointer;
+    }
+    .fc .fc-day-today .fc-daygrid-day-top .fc-daygrid-day-number {
+      background: var(--primary-grad);
+      color: #fff !important;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .fc-event {
+      border-radius: 20px !important;
+      padding: 4px 10px !important;
+      font-size: 0.78rem !important;
+      font-weight: 600 !important;
+      cursor: grab !important;
+      margin: 3px 2px !important;
+      box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    #focusModeModal .modal-dialog {
+      max-width: 100vw;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    #focusModeModal .modal-content {
+      height: 100vh;
+      border-radius: 0;
+      border: none;
+      background: radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15) 0%, rgba(15, 23, 42, 0.95) 70%);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      position: relative;
+    }
+    .focus-exit-btn {
+      position: absolute;
+      top: 30px;
+      right: 36px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .focus-exit-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+      transform: scale(1.08);
+    }
+    .focus-container {
+      max-width: 650px;
+      width: 90%;
+      text-align: center;
+    }
+    .timer-svg-wrap {
+      position: relative;
+      width: 290px;
+      height: 290px;
+      margin: 20px auto;
+    }
+    .timer-svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+    .timer-track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.08);
+      stroke-width: 10;
+    }
+    .timer-progress {
+      fill: none;
+      stroke: url(#timerGrad);
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 816.81;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.8s linear;
+    }
+    .timer-overlay-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .timer-clock {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      font-family: monospace;
+      color: #ffffff;
+      text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+    }
+
+    #comicExplosionOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .comic-burst-star {
+      position: relative;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, #fde047 30%, #ef4444 85%);
+      clip-path: polygon(50% 0%, 65% 28%, 98% 35%, 72% 58%, 82% 98%, 50% 75%, 18% 98%, 28% 58%, 2% 35%, 35% 28%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 100px rgba(239, 68, 68, 0.8);
+      transform: scale(0.2) rotate(-20deg);
+      transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .comic-text {
+      font-family: 'Bangers', cursive;
+      font-size: 5.5rem;
+      color: #ffffff;
+      -webkit-text-stroke: 3px #000000;
+      text-shadow: 6px 6px 0px #000000;
+      letter-spacing: 2px;
+    }
+
+    .btn-floating-wheel {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: #ffffff;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 10px 30px rgba(236, 72, 153, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 1040;
+      transition: all 0.25s ease;
+    }
+    .btn-floating-wheel:hover {
+      transform: scale(1.12) rotate(15deg);
+      box-shadow: 0 14px 40px rgba(236, 72, 153, 0.7);
+    }
+
+    #wheelModal .modal-content {
+      border-radius: 30px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0f172a 90%);
+      color: #ffffff;
+      text-align: center;
+      padding: 24px;
+    }
+    .wheel-pointer {
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 30px solid #ef4444;
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+    }
+  </style>
+</head>
+<body id="appBody">
+
+  <!-- Comic Explosion Graphic Overlay -->
+  <div id="comicExplosionOverlay">
+    <div class="comic-burst-star" id="comicStar">
+      <div class="comic-text">BOOM!</div>
+    </div>
+  </div>
+
+  <!-- Floating Wheel of Destiny Launcher -->
+  <div class="btn-floating-wheel" id="btnOpenWheel" title="Can't decide? Spin the Wheel of Destiny!">
+    <i class="fa-solid fa-dharmachakra"></i>
+  </div>
+
+  <!-- Top Glass Navbar -->
+  <header class="navbar navbar-glass navbar-expand-lg sticky-top px-4 py-2">
+    <div class="container-fluid px-0">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-logo-glow">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div>
+          <span class="fs-5 fw-bold text-body">TaskFlow <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill fs-6 px-2 py-1">Studio</span></span>
+          <span class="text-secondary d-none d-sm-inline small ms-2">&bull; Focus & Deadlines</span>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <div class="user-badge shadow-sm">
+          <i class="fa-solid fa-circle-user text-primary fs-5"></i>
+          <span class="fw-bold small text-body" th:text="${userName}">User</span>
+          <a href="/logout" class="text-danger ms-2 text-decoration-none" title="Log Out">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </a>
+        </div>
+
+        <button class="btn btn-outline-secondary border-0 rounded-circle p-2" id="themeToggleBtn" title="Toggle Theme">
+          <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+
+        <button class="btn btn-create-task" data-bs-toggle="modal" data-bs-target="#createTaskModal">
+          <i class="fa-solid fa-plus me-1"></i> New Task
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <main class="container-fluid py-4 px-lg-5">
+
+    <!-- Savage AI Motivator Ticker -->
+    <div class="motivator-box shadow-sm">
+      <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden">
+        <span class="fs-4" id="motivatorAvatar">🔥</span>
+        <div class="overflow-hidden">
+          <div class="small fw-bold text-uppercase opacity-75" id="motivatorLabel" style="letter-spacing: 0.5px;">Savage AI Roast:</div>
+          <div class="fw-bold text-truncate" id="motivatorQuote" style="font-size: 0.95rem;">Checking your productivity momentum...</div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <select class="form-select form-select-sm rounded-pill persona-select-badge bg-body shadow-none" id="personaSelect">
+          <option value="savage" selected>🔥 Roast Mode</option>
+          <option value="anime">⚔️ Shonen Anime</option>
+          <option value="zen">🍃 Zen Master</option>
+        </select>
+        <button class="btn btn-sm btn-outline-secondary rounded-circle" id="btnRefreshRoast" title="New Quote">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="luxury-card metric-card d-flex align-items-center gap-3">
+          <div class="metric-icon-box bg-primary bg-opacity-10 text-primary">
+            <i class="fa-solid fa-calendar-days"></i>
+          </div>
+          <div>
+            <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.5px;">All Schedules</div>
+            <h3 class="fw-bold mb-0" id="stat-total">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="luxury-card metric-card d-flex align-items-center gap-3">
+          <div class="metric-icon-box bg-success bg-opacity-10 text-success">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Completed</div>
+            <h3 class="fw-bold mb-0" id="stat-completed">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="luxury-card metric-card d-flex align-items-center gap-3">
+          <div class="metric-icon-box bg-warning bg-opacity-10 text-warning">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div>
+            <div class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.5px;">In Progress</div>
+            <h3 class="fw-bold mb-0" id="stat-pending">0</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="luxury-card metric-card">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-secondary small fw-bold text-uppercase" style="letter-spacing: 0.5px;">Efficiency</span>
+            <span class="fw-bold small text-success" id="stat-progress-text">0%</span>
+          </div>
+          <div class="progress mt-2" style="height: 10px; border-radius: 20px; background-color: rgba(99, 102, 241, 0.08);">
+            <div class="progress-bar" id="stat-progress-bar" style="width: 0%; background: var(--primary-grad); border-radius: 20px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Switcher -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <div class="view-switcher-pill">
+        <button class="btn active" id="btnShowCalendar"><i class="fa-solid fa-calendar-day me-1"></i> Calendar View</button>
+        <button class="btn" id="btnShowMatrix"><i class="fa-solid fa-table-cells-large me-1"></i> Eisenhower Matrix</button>
+      </div>
+      <span class="text-secondary small fw-medium" id="viewSubtext">Interactive monthly and weekly scheduling</span>
+    </div>
+
+    <!-- Calendar View -->
+    <div id="calendarViewContainer" class="luxury-card p-4">
+      <div id="calendar"></div>
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap pt-3 mt-3 border-top border-light-subtle">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <span class="small fw-bold text-secondary text-uppercase" style="letter-spacing: 0.5px;">Priority:</span>
+          <div class="d-inline-flex align-items-center gap-2 small fw-semibold text-secondary"><span class="badge bg-danger rounded-circle p-1"></span> High</div>
+          <div class="d-inline-flex align-items-center gap-2 small fw-semibold text-secondary"><span class="badge bg-warning rounded-circle p-1"></span> Medium</div>
+          <div class="d-inline-flex align-items-center gap-2 small fw-semibold text-secondary"><span class="badge bg-primary rounded-circle p-1"></span> Low</div>
+          <div class="d-inline-flex align-items-center gap-2 small fw-semibold text-secondary"><span class="badge bg-success rounded-circle p-1"></span> Completed (✔)</div>
+        </div>
+        <div class="small text-secondary fw-medium">
+          <i class="fa-solid fa-fire text-danger me-1"></i> Red pulse tags indicate critical deadlines under 3 hours
+        </div>
+      </div>
+    </div>
+
+    <!-- Eisenhower Matrix Board -->
+    <div id="matrixViewContainer" class="luxury-card p-4 d-none">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="matrix-quadrant">
+            <div class="quadrant-header q1-border">
+              <div>
+                <span class="badge bg-danger rounded-pill px-2 py-1 mb-1">DO FIRST</span>
+                <h6 class="fw-bold text-danger mb-0">Urgent & Important</h6>
+              </div>
+              <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill fw-bold" id="q1-count">0 Tasks</span>
+            </div>
+            <div class="flex-grow-1 overflow-auto" id="q1-tasks" style="max-height: 250px;"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="matrix-quadrant">
+            <div class="quadrant-header q2-border">
+              <div>
+                <span class="badge bg-primary rounded-pill px-2 py-1 mb-1">SCHEDULE</span>
+                <h6 class="fw-bold text-primary mb-0">Not Urgent, but Important</h6>
+              </div>
+              <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-bold" id="q2-count">0 Tasks</span>
+            </div>
+            <div class="flex-grow-1 overflow-auto" id="q2-tasks" style="max-height: 250px;"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="matrix-quadrant">
+            <div class="quadrant-header q3-border">
+              <div>
+                <span class="badge bg-warning text-dark rounded-pill px-2 py-1 mb-1">DELEGATE / QUICK</span>
+                <h6 class="fw-bold text-warning mb-0">Urgent, Less Critical</h6>
+              </div>
+              <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill fw-bold" id="q3-count">0 Tasks</span>
+            </div>
+            <div class="flex-grow-1 overflow-auto" id="q3-tasks" style="max-height: 250px;"></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="matrix-quadrant">
+            <div class="quadrant-header q4-border">
+              <div>
+                <span class="badge bg-secondary rounded-pill px-2 py-1 mb-1">BACKLOG</span>
+                <h6 class="fw-bold text-secondary mb-0">Low Priority & Future</h6>
+              </div>
+              <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill fw-bold" id="q4-count">0 Tasks</span>
+            </div>
+            <div class="flex-grow-1 overflow-auto" id="q4-tasks" style="max-height: 250px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create Task Modal -->
+  <div class="modal fade" id="createTaskModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <h5 class="modal-title fw-bold">Schedule New Target</h5>
+            <p class="text-secondary small mb-0">Automatic email alert will trigger on your account.</p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form action="/tasks" method="POST">
+          <div class="modal-body pt-3">
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">Task Title / Goal</label>
+              <input type="text" name="title" class="form-control rounded-3 py-2" placeholder="Task Name" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-secondary">Notification Recipient</label>
+              <input type="text" class="form-control rounded-3 py-2 bg-body-tertiary" th:value="${userEmail}" readonly>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-bold text-secondary">Category</label>
+                <select name="category" class="form-select rounded-3 py-2">
+                  <option value="Study">Study</option>
+                  <option value="Work">Work</option>
+                  <option value="Project">Project</option>
+                  <option value="Personal">Personal</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-bold text-secondary">Priority Level</label>
+                <select name="priority" class="form-select rounded-3 py-2">
+                  <option value="HIGH">High (Rose Red)</option>
+                  <option value="MEDIUM" selected>Medium (Amber)</option>
+                  <option value="LOW">Low (Blue)</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-secondary">Deadline Date & Time</label>
+              <input type="datetime-local" id="taskDeadlineInput" name="deadline" class="form-control rounded-3 py-2" required>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-create-task px-4">Create Target</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Day Agenda Modal -->
+  <div class="modal fade" id="dayAgendaModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <span class="badge bg-primary bg-opacity-10 text-primary mb-1">Date Overview</span>
+            <h5 class="modal-title fw-bold text-body" id="dayAgendaTitle">Tasks for Date</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body py-3">
+          <div id="dayAgendaList" style="max-height: 350px; overflow-y: auto;"></div>
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+          <button type="button" class="btn btn-create-task btn-sm px-3" id="btnQuickAddOnDate">
+            <i class="fa-solid fa-plus me-1"></i> Add Task on this Day
+          </button>
+          <button type="button" class="btn btn-light btn-sm rounded-pill px-3" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Detail Modal with Dynamic Reopen/Complete Button -->
+  <div class="modal fade" id="taskDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-3">
+        <div class="modal-header border-0 pb-0">
+          <div>
+            <span id="modalCategoryBadge" class="badge bg-secondary mb-1">Category</span>
+            <h5 class="modal-title fw-bold text-body" id="detailTitle">Task Details</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body py-3">
+          <div class="p-3 bg-body-tertiary rounded-4 mb-3 border">
+            <div class="small text-secondary mb-1">Scheduled Target:</div>
+            <div class="fw-bold fs-6" id="detailDate"></div>
+            <div class="mt-2" id="detailCountdownBadge"></div>
+          </div>
+          <div class="small text-secondary">Recipient: <span class="fw-semibold text-body" id="detailEmail"></span></div>
+          <div class="small text-secondary mt-1">Priority: <span class="fw-semibold text-body" id="detailPriority"></span></div>
+        </div>
+        <div class="modal-footer border-0 pt-0 d-flex justify-content-between flex-wrap gap-2">
+          <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3" id="btnDeleteTask">
+            <i class="fa-solid fa-trash me-1"></i> Delete
+          </button>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-dark btn-sm rounded-pill px-3 fw-semibold" id="btnLaunchFocusMode">
+              <i class="fa-solid fa-stopwatch me-1 text-warning"></i> Focus Mode
+            </button>
+            <!-- Dynamic State Action Button -->
+            <button type="button" class="btn btn-danger btn-sm fw-bold rounded-pill px-3" id="btnToggleCompletionAction">
+              <i class="fa-solid fa-meteor me-1" id="actionBtnIcon"></i> <span id="actionBtnLabel">METEOR STRIKE!</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-Screen Focus Modal -->
+  <div class="modal fade" id="focusModeModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <button type="button" class="focus-exit-btn" id="btnCloseFocusModal" title="Exit Focus Mode">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="focus-container">
+          <div class="mb-3">
+            <span class="badge bg-warning bg-opacity-20 text-warning px-3 py-2 rounded-pill fw-bold border border-warning border-opacity-25" style="letter-spacing: 1px;">
+              <i class="fa-solid fa-brain me-1"></i> DEEP FOCUS SESSION
+            </span>
+          </div>
+
+          <h2 class="fw-bold text-white mb-4 text-truncate" id="focusTaskTitle" style="letter-spacing: -0.5px;">Focus Target</h2>
+
+          <div class="timer-svg-wrap">
+            <svg class="timer-svg" viewBox="0 0 300 300">
+              <defs>
+                <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#6366f1" />
+                  <stop offset="50%" stop-color="#a855f7" />
+                  <stop offset="100%" stop-color="#ec4899" />
+                </linearGradient>
+              </defs>
+              <circle class="timer-track" cx="150" cy="150" r="130"></circle>
+              <circle class="timer-progress" id="timerProgressRing" cx="150" cy="150" r="130"></circle>
+            </svg>
+            <div class="timer-overlay-content">
+              <div class="timer-clock" id="focusTimerDisplay">25:00</div>
+              <span class="small text-white-50 text-uppercase fw-bold" style="letter-spacing: 2px;">Sprint Remaining</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-center align-items-center gap-3 mb-4">
+            <button class="btn btn-light rounded-pill px-4 py-2 fw-bold shadow-lg" id="btnToggleFocusTimer">
+              <i class="fa-solid fa-play me-2"></i> Start
+            </button>
+            <button class="btn btn-outline-light rounded-pill px-3 py-2" id="btnResetFocusTimer" title="Reset to 25:00">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+
+          <div class="pt-3 border-top border-white border-opacity-10">
+            <button type="button" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow" id="btnCompleteFromFocus">
+              <i class="fa-solid fa-bomb me-2"></i> DESTROY TARGET NOW!
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wheel of Destiny Modal -->
+  <div class="modal fade" id="wheelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge bg-warning text-dark fw-bold rounded-pill px-3 py-1">ROULETTE OF FATE</span>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <h4 class="fw-bold mb-1">Wheel of Destiny</h4>
+        <p class="text-white-50 small mb-3">Can't decide what to do? Let fate pick your next sprint target!</p>
+
+        <div class="position-relative d-inline-block mx-auto mb-3">
+          <div class="wheel-pointer"></div>
+          <canvas id="wheelCanvas" width="320" height="320"></canvas>
+        </div>
+
+        <div id="wheelWinnerBanner" class="p-3 rounded-4 bg-white bg-opacity-10 mb-3 d-none">
+          <div class="text-warning small fw-bold text-uppercase">The Oracle Has Chosen:</div>
+          <h5 class="fw-bold text-white mb-2" id="wheelWinnerTitle">Task Name</h5>
+          <button class="btn btn-light btn-sm rounded-pill fw-bold px-4" id="btnStartWheelFocus">
+            <i class="fa-solid fa-fire me-1 text-danger"></i> Launch Focus Sprint
+          </button>
+        </div>
+
+        <div>
+          <button type="button" class="btn btn-warning btn-lg rounded-pill px-5 fw-bold shadow" id="btnSpinWheel">
+            <i class="fa-solid fa-arrows-spin me-2"></i> SPIN WHEEL!
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <script>
+    let activeTaskId = null;
+    let activeTaskObj = null;
+    let selectedDateStr = null;
+    let detailModal = null;
+    let dayAgendaModal = null;
+    let createTaskModal = null;
+    let focusModeModal = null;
+    let wheelModal = null;
+    let allTasksData = [];
+    let calendar = null;
+
+    // Pomodoro Timer State
+    const TOTAL_SECONDS = 25 * 60;
+    let focusRemaining = TOTAL_SECONDS;
+    let focusTimerInterval = null;
+    let isTimerRunning = false;
+    const RING_CIRCUMFERENCE = 2 * Math.PI * 130;
+
+    // Audio Engine
+    let audioCtx = null;
+
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // NEW SOUND: Crisp Cinematic Laser Blast + Metallic Boom Accent
+    function playLaserBoomSound() {
+      try {
+        initAudioContext();
+        const now = audioCtx.currentTime;
+
+        // 1. Futuristic Laser Zap (Fast pitch bend from 1800Hz down to 220Hz)
+        const zapOsc = audioCtx.createOscillator();
+        const zapGain = audioCtx.createGain();
+        zapOsc.type = 'sawtooth';
+        zapOsc.frequency.setValueAtTime(1800, now);
+        zapOsc.frequency.exponentialRampToValueAtTime(220, now + 0.15);
+
+        zapGain.gain.setValueAtTime(0.4, now);
+        zapGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+        zapOsc.connect(zapGain);
+        zapGain.connect(audioCtx.destination);
+        zapOsc.start(now);
+        zapOsc.stop(now + 0.2);
+
+        // 2. Punchy Resonant Metallic Boom (Low-Mid harmonic punch)
+        const boomOsc = audioCtx.createOscillator();
+        const boomGain = audioCtx.createGain();
+        boomOsc.type = 'triangle';
+        boomOsc.frequency.setValueAtTime(320, now + 0.05);
+        boomOsc.frequency.exponentialRampToValueAtTime(60, now + 0.45);
+
+        boomGain.gain.setValueAtTime(0.6, now + 0.05);
+        boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+        boomOsc.connect(boomGain);
+        boomGain.connect(audioCtx.destination);
+        boomOsc.start(now + 0.05);
+        boomOsc.stop(now + 0.5);
+      } catch (e) {
+        console.warn('Audio play failed:', e);
+      }
+    }
+
+    // Soft click chime for reopening / uncompleting tasks
+    function playReopenChime() {
+      try {
+        initAudioContext();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(780, now + 0.12);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      } catch (e) {}
+    }
+
+    function playWheelTickSound() {
+      try {
+        initAudioContext();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.04);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      } catch (e) {}
+    }
+
+    // Comic Explosion FX
+    function triggerMeteorDestruction() {
+      playLaserBoomSound();
+
+      const appBody = document.getElementById('appBody');
+      appBody.classList.remove('screen-shake-active');
+      void appBody.offsetWidth;
+      appBody.classList.add('screen-shake-active');
+
+      const overlay = document.getElementById('comicExplosionOverlay');
+      const star = document.getElementById('comicStar');
+      overlay.style.opacity = '1';
+      star.style.transform = 'scale(1.2) rotate(10deg)';
+
+      if (typeof confetti === 'function') {
+        confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
+      }
+
+      setTimeout(() => {
+        star.style.transform = 'scale(0.2) rotate(-20deg)';
+        overlay.style.opacity = '0';
+        appBody.classList.remove('screen-shake-active');
+      }, 700);
+    }
+
+    // Motivator Quotes
+    const MOTIVATOR_QUOTES = {
+      savage: [
+        "Still scrolling instead of working? Your goals aren't going to achieve themselves.",
+        "Your future self is currently judging your life choices.",
+        "Procrastination is the art of keeping up with yesterday. Stop staring, start doing.",
+        "Another coffee won't finish this task. Get to work!",
+        "Zero tasks completed today? Even Windows Update works harder than this."
+      ],
+      anime: [
+        "This deadline isn't your defeat—it's your ultimate training arc!",
+        "Surpass your limits right here, right now! Bankai!",
+        "A true warrior doesn't fear deadlines, they conquer them!",
+        "Don't give up! The entire ninja village is counting on your focus!"
+      ],
+      zen: [
+        "The journey of ten thousand tasks begins with a single focused breath.",
+        "Do not dwell in the anxiety of tomorrow; act in the simplicity of now.",
+        "Water hollows stone not by force, but by persistence. Begin.",
+        "Simplicity brings clarity. Release distraction, embrace the next step."
+      ]
+    };
+
+    function updateMotivatorQuote() {
+      const persona = document.getElementById('personaSelect').value;
+      const avatarMap = { savage: '🔥', anime: '⚔️', zen: '🍃' };
+      const labelMap = { savage: 'Savage AI Roast:', anime: 'Shonen Protagonist:', zen: 'Zen Master Wisdom:' };
+
+      document.getElementById('motivatorAvatar').innerText = avatarMap[persona];
+      document.getElementById('motivatorLabel').innerText = labelMap[persona];
+
+      const list = MOTIVATOR_QUOTES[persona];
+      const randomQuote = list[Math.floor(Math.random() * list.length)];
+      document.getElementById('motivatorQuote').innerText = randomQuote;
+    }
+
+    // Wheel of Destiny
+    let wheelAngle = 0;
+    let isSpinning = false;
+    let wheelChosenTask = null;
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+      const uncompleted = allTasksData.filter(t => !t.completed);
+      const numSegments = Math.max(uncompleted.length, 1);
+      const arc = (2 * Math.PI) / numSegments;
+      const colors = ['#f43f5e', '#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899'];
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numSegments; i++) {
+        const angle = wheelAngle + i * arc;
+        ctx.beginPath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.moveTo(160, 160);
+        ctx.arc(160, 160, 150, angle, angle + arc);
+        ctx.lineTo(160, 160);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(160, 160);
+        ctx.rotate(angle + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px sans-serif';
+        const label = uncompleted.length > 0 ? uncompleted[i].title : 'Add A Task!';
+        ctx.fillText(label.slice(0, 14), 135, 5);
+        ctx.restore();
+      }
+    }
+
+    function spinWheel() {
+      if (isSpinning) return;
+      const uncompleted = allTasksData.filter(t => !t.completed);
+      if (uncompleted.length === 0) {
+        alert('No pending tasks to spin! You are all caught up.');
+        return;
+      }
+
+      isSpinning = true;
+      document.getElementById('wheelWinnerBanner').classList.add('d-none');
+      const totalSpin = Math.PI * 2 * (5 + Math.random() * 4);
+      const duration = 4000;
+      const start = performance.now();
+      const initialAngle = wheelAngle;
+      let lastTickAngle = 0;
+
+      function animate(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        wheelAngle = initialAngle + totalSpin * easeOut;
+        drawWheel();
+
+        if (Math.abs(wheelAngle - lastTickAngle) > 0.45) {
+          playWheelTickSound();
+          lastTickAngle = wheelAngle;
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          const arc = (2 * Math.PI) / uncompleted.length;
+          const normalized = (wheelAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+          const pointerAngle = (1.5 * Math.PI - normalized + 2 * Math.PI) % (2 * Math.PI);
+          const winningIndex = Math.floor(pointerAngle / arc) % uncompleted.length;
+          wheelChosenTask = uncompleted[winningIndex];
+
+          document.getElementById('wheelWinnerTitle').innerText = wheelChosenTask.title;
+          document.getElementById('wheelWinnerBanner').classList.remove('d-none');
+          if (typeof confetti === 'function') confetti({ particleCount: 50, spread: 60 });
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      detailModal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+      dayAgendaModal = new bootstrap.Modal(document.getElementById('dayAgendaModal'));
+      createTaskModal = new bootstrap.Modal(document.getElementById('createTaskModal'));
+      focusModeModal = new bootstrap.Modal(document.getElementById('focusModeModal'));
+      wheelModal = new bootstrap.Modal(document.getElementById('wheelModal'));
+
+      // Theme toggle
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const themeIcon = document.getElementById('themeIcon');
+      const savedTheme = localStorage.getItem('taskflow_theme') || 'light';
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      updateThemeIcon(savedTheme);
+
+      themeToggleBtn.addEventListener('click', () => {
+        const activeTheme = document.documentElement.getAttribute('data-bs-theme');
+        const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', nextTheme);
+        localStorage.setItem('taskflow_theme', nextTheme);
+        updateThemeIcon(nextTheme);
+      });
+
+      function updateThemeIcon(theme) {
+        themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun text-warning' : 'fa-solid fa-moon';
+      }
+
+      // Persona Picker
+      document.getElementById('personaSelect').addEventListener('change', updateMotivatorQuote);
+      document.getElementById('btnRefreshRoast').addEventListener('click', updateMotivatorQuote);
+      updateMotivatorQuote();
+      setInterval(updateMotivatorQuote, 20000);
+
+      // Wheel Modal Launcher
+      document.getElementById('btnOpenWheel').addEventListener('click', function() {
+        initAudioContext();
+        wheelModal.show();
+        setTimeout(drawWheel, 200);
+      });
+      document.getElementById('btnSpinWheel').addEventListener('click', spinWheel);
+
+      document.getElementById('btnStartWheelFocus').addEventListener('click', function() {
+        if (!wheelChosenTask) return;
+        wheelModal.hide();
+        activeTaskId = wheelChosenTask.id;
+        activeTaskObj = wheelChosenTask;
+        document.getElementById('focusTaskTitle').innerText = wheelChosenTask.title;
+        resetFocusTimer();
+        focusModeModal.show();
+      });
+
+      // View Switcher logic
+      const btnShowCalendar = document.getElementById('btnShowCalendar');
+      const btnShowMatrix = document.getElementById('btnShowMatrix');
+      const calendarViewContainer = document.getElementById('calendarViewContainer');
+      const matrixViewContainer = document.getElementById('matrixViewContainer');
+      const viewSubtext = document.getElementById('viewSubtext');
+
+      btnShowCalendar.addEventListener('click', () => {
+        btnShowCalendar.classList.add('active');
+        btnShowMatrix.classList.remove('active');
+        calendarViewContainer.classList.remove('d-none');
+        matrixViewContainer.classList.add('d-none');
+        viewSubtext.innerText = 'Interactive monthly and weekly scheduling';
+        if (calendar) calendar.render();
+      });
+
+      btnShowMatrix.addEventListener('click', () => {
+        btnShowMatrix.classList.add('active');
+        btnShowCalendar.classList.remove('active');
+        matrixViewContainer.classList.remove('d-none');
+        calendarViewContainer.classList.add('d-none');
+        viewSubtext.innerText = 'Prioritize targets by Urgency & Importance';
+        renderEisenhowerMatrix();
+      });
+
+      // FullCalendar
+      const calendarEl = document.getElementById('calendar');
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        editable: true,
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,dayGridWeek,dayGridDay'
+        },
+        buttonText: {
+          today: 'Today',
+          dayGridMonth: 'Month',
+          dayGridWeek: 'Week',
+          dayGridDay: 'Day'
+        },
+        events: '/api/events',
+        dateClick: function(info) {
+          openDayAgenda(info.dateStr);
+        },
+        eventDrop: function(info) {
+          const newDate = info.event.start.toISOString().slice(0, 19);
+          const params = new URLSearchParams({ newDeadline: newDate });
+
+          fetch(`/tasks/${info.event.id}/reschedule?${params}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(() => fetchTasksData());
+        },
+        eventClick: function(info) {
+          const task = allTasksData.find(t => t.id == info.event.id);
+          if (task) {
+            showTaskDetailModal(task);
+          }
+        }
+      });
+      calendar.render();
+
+      fetchTasksData();
+
+      // Quick add task
+      document.getElementById('btnQuickAddOnDate').addEventListener('click', function() {
+        dayAgendaModal.hide();
+        if (selectedDateStr) {
+          const targetDateTime = selectedDateStr.length === 10 ? `${selectedDateStr}T10:00` : selectedDateStr.slice(0, 16);
+          document.getElementById('taskDeadlineInput').value = targetDateTime;
+        }
+        createTaskModal.show();
+      });
+
+      // TOGGLE STATUS: Completes (with explosion) OR Reopens/Uncompletes (with calm chime)
+      document.getElementById('btnToggleCompletionAction').addEventListener('click', function() {
+        if (!activeTaskId) return;
+
+        const isCurrentlyCompleted = activeTaskObj && activeTaskObj.completed;
+
+        fetch('/tasks/' + activeTaskId + '/toggle', { method: 'POST' })
+          .then(res => res.json())
+          .then(data => {
+            detailModal.hide();
+            if (data.completed) {
+              // Task transitioned from pending -> completed
+              triggerMeteorDestruction();
+            } else {
+              // Task transitioned from completed -> pending (Uncompleted!)
+              playReopenChime();
+            }
+            calendar.refetchEvents();
+            fetchTasksData();
+          });
+      });
+
+      document.getElementById('btnDeleteTask').addEventListener('click', function() {
+        if (!activeTaskId || !confirm('Permanently delete this task?')) return;
+        fetch('/tasks/' + activeTaskId, { method: 'DELETE' })
+          .then(res => res.json())
+          .then(() => {
+            detailModal.hide();
+            calendar.refetchEvents();
+            fetchTasksData();
+          });
+      });
+
+      // Launch Focus Mode Modal
+      document.getElementById('btnLaunchFocusMode').addEventListener('click', function() {
+        initAudioContext();
+        detailModal.hide();
+        document.getElementById('focusTaskTitle').innerText = activeTaskObj ? activeTaskObj.title : 'Target';
+        resetFocusTimer();
+        focusModeModal.show();
+      });
+
+      document.getElementById('btnCloseFocusModal').addEventListener('click', function() {
+        pauseFocusTimer();
+        focusModeModal.hide();
+      });
+
+      // Pomodoro Controls
+      const btnToggleTimer = document.getElementById('btnToggleFocusTimer');
+      btnToggleTimer.addEventListener('click', function() {
+        initAudioContext();
+        if (isTimerRunning) {
+          pauseFocusTimer();
+        } else {
+          startFocusTimer();
+        }
+      });
+
+      document.getElementById('btnResetFocusTimer').addEventListener('click', resetFocusTimer);
+
+      document.getElementById('btnCompleteFromFocus').addEventListener('click', function() {
+        if (!activeTaskId) return;
+        fetch('/tasks/' + activeTaskId + '/toggle', { method: 'POST' })
+          .then(res => res.json())
+          .then(() => {
+            pauseFocusTimer();
+            focusModeModal.hide();
+            triggerMeteorDestruction();
+            calendar.refetchEvents();
+            fetchTasksData();
+          });
+      });
+
+      setInterval(() => {
+        if (!document.getElementById('matrixViewContainer').classList.contains('d-none')) {
+          renderEisenhowerMatrix();
+        }
+      }, 10000);
+    });
+
+    function getCountdownMeta(deadlinestr, completed) {
+      if (completed) {
+        return { text: 'Completed ✔', cls: 'bg-success text-white', isUrgent: false };
+      }
+      const diffMs = new Date(deadlinestr) - new Date();
+      if (diffMs <= 0) {
+        const absMinutes = Math.abs(Math.round(diffMs / (1000 * 60)));
+        const hours = Math.floor(absMinutes / 60);
+        const mins = absMinutes % 60;
+        const text = hours > 0 ? `🚨 Expired ${hours}h ${mins}m ago` : `🚨 Expired ${mins}m ago`;
+        return { text, cls: 'chip-expired pulse-urgent', isUrgent: true };
+      }
+
+      const totalMinutes = Math.round(diffMs / (1000 * 60));
+      const hours = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      const days = Math.floor(hours / 24);
+
+      if (hours < 3) {
+        return { text: `🔥 ${hours}h ${mins}m left`, cls: 'chip-critical pulse-urgent', isUrgent: true };
+      } else if (days < 1) {
+        return { text: `⚡ ${hours}h ${mins}m left`, cls: 'chip-upcoming', isUrgent: false };
+      } else {
+        return { text: `⏳ ${days}d ${hours % 24}h left`, cls: 'chip-upcoming', isUrgent: false };
+      }
+    }
+
+    function renderEisenhowerMatrix() {
+      const q1El = document.getElementById('q1-tasks');
+      const q2El = document.getElementById('q2-tasks');
+      const q3El = document.getElementById('q3-tasks');
+      const q4El = document.getElementById('q4-tasks');
+
+      q1El.innerHTML = '';
+      q2El.innerHTML = '';
+      q3El.innerHTML = '';
+      q4El.innerHTML = '';
+
+      let c1 = 0, c2 = 0, c3 = 0, c4 = 0;
+      const now = new Date();
+      const in48Hours = new Date(now.getTime() + (48 * 60 * 60 * 1000));
+
+      allTasksData.forEach(task => {
+        if (task.completed) return;
+
+        const deadline = new Date(task.deadline);
+        const isUrgent = deadline <= in48Hours;
+        const isImportant = (task.priority === 'HIGH');
+        const countdownMeta = getCountdownMeta(task.deadline, task.completed);
+
+        const taskCard = document.createElement('div');
+        taskCard.className = `matrix-task-item ${countdownMeta.isUrgent ? 'pulse-urgent' : ''}`;
+        taskCard.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-body small text-truncate" style="max-width: 180px;">${task.title}</span>
+            <span class="badge ${task.priority === 'HIGH' ? 'bg-danger' : task.priority === 'LOW' ? 'bg-primary' : 'bg-warning'} rounded-pill" style="font-size:0.65rem;">${task.priority || 'MED'}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="countdown-chip ${countdownMeta.cls}">${countdownMeta.text}</span>
+            <span class="text-secondary small" style="font-size: 0.72rem;"><i class="fa-regular fa-folder me-1"></i>${task.category || 'General'}</span>
+          </div>
+        `;
+
+        taskCard.addEventListener('click', () => showTaskDetailModal(task));
+
+        if (isUrgent && isImportant) {
+          q1El.appendChild(taskCard);
+          c1++;
+        } else if (!isUrgent && isImportant) {
+          q2El.appendChild(taskCard);
+          c2++;
+        } else if (isUrgent && !isImportant) {
+          q3El.appendChild(taskCard);
+          c3++;
+        } else {
+          q4El.appendChild(taskCard);
+          c4++;
+        }
+      });
+
+      const emptyMsg = '<div class="text-secondary small text-center py-4 opacity-75">No active tasks in this quadrant</div>';
+      if (c1 === 0) q1El.innerHTML = emptyMsg;
+      if (c2 === 0) q2El.innerHTML = emptyMsg;
+      if (c3 === 0) q3El.innerHTML = emptyMsg;
+      if (c4 === 0) q4El.innerHTML = emptyMsg;
+
+      document.getElementById('q1-count').innerText = `${c1} Tasks`;
+      document.getElementById('q2-count').innerText = `${c2} Tasks`;
+      document.getElementById('q3-count').innerText = `${c3} Tasks`;
+      document.getElementById('q4-count').innerText = `${c4} Tasks`;
+    }
+
+    function openDayAgenda(dateStr) {
+      selectedDateStr = dateStr;
+      const cleanDate = dateStr.slice(0, 10);
+      const displayDate = new Date(cleanDate + 'T00:00:00').toLocaleDateString(undefined, {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+
+      document.getElementById('dayAgendaTitle').innerText = displayDate;
+      const listContainer = document.getElementById('dayAgendaList');
+      listContainer.innerHTML = '';
+
+      const matchedTasks = allTasksData.filter(t => t.deadline.slice(0, 10) === cleanDate);
+
+      if (matchedTasks.length === 0) {
+        listContainer.innerHTML = `
+          <div class="text-center py-4 text-secondary">
+            <i class="fa-regular fa-calendar-xmark fs-2 mb-2 text-muted"></i>
+            <p class="small mb-0">No targets scheduled for this date.</p>
+          </div>
+        `;
+      } else {
+        matchedTasks.forEach(task => {
+          const countdownMeta = getCountdownMeta(task.deadline, task.completed);
+          const item = document.createElement('div');
+          item.className = `p-3 rounded-4 bg-body-tertiary mb-2 border shadow-sm ${countdownMeta.isUrgent ? 'pulse-urgent' : ''}`;
+          item.style.cursor = 'pointer';
+          item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start mb-1">
+              <span class="fw-bold ${task.completed ? 'text-decoration-line-through text-success' : 'text-body'}">
+                ${task.completed ? '✔ ' : ''}${task.title}
+              </span>
+              <span class="badge ${task.priority === 'HIGH' ? 'bg-danger' : task.priority === 'LOW' ? 'bg-primary' : 'bg-warning'} text-white rounded-pill px-2 py-1">${task.priority || 'MED'}</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center small text-secondary mt-2">
+              <span class="countdown-chip ${countdownMeta.cls}">${countdownMeta.text}</span>
+              <span><i class="fa-regular fa-clock me-1"></i>${new Date(task.deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          `;
+          item.addEventListener('click', () => {
+            dayAgendaModal.hide();
+            showTaskDetailModal(task);
+          });
+          listContainer.appendChild(item);
+        });
+      }
+
+      dayAgendaModal.show();
+    }
+
+    // Task Detail Modal: Updates Button state based on task.completed status
+    function showTaskDetailModal(task) {
+      activeTaskId = task.id;
+      activeTaskObj = task;
+
+      document.getElementById('detailTitle').innerText = (task.completed ? '✔ ' : '') + task.title;
+      document.getElementById('detailDate').innerText = new Date(task.deadline).toLocaleString();
+      document.getElementById('modalCategoryBadge').innerText = task.category || 'General';
+      document.getElementById('detailEmail').innerText = task.userEmail || 'N/A';
+      document.getElementById('detailPriority').innerText = task.priority || 'MEDIUM';
+
+      const countdownMeta = getCountdownMeta(task.deadline, task.completed);
+      document.getElementById('detailCountdownBadge').innerHTML = `<span class="countdown-chip ${countdownMeta.cls} px-3 py-1">${countdownMeta.text}</span>`;
+
+      // DYNAMIC BUTTON LOGIC
+      const actionBtn = document.getElementById('btnToggleCompletionAction');
+      const actionIcon = document.getElementById('actionBtnIcon');
+      const actionLabel = document.getElementById('actionBtnLabel');
+
+      if (task.completed) {
+        // Option to reopen task back to uncomplete
+        actionBtn.className = 'btn btn-outline-success btn-sm fw-bold rounded-pill px-3';
+        actionIcon.className = 'fa-solid fa-rotate-left me-1';
+        actionLabel.innerText = 'Mark Uncomplete / Reopen';
+      } else {
+        // Option to complete task with Meteor Strike!
+        actionBtn.className = 'btn btn-danger btn-sm fw-bold rounded-pill px-3';
+        actionIcon.className = 'fa-solid fa-meteor me-1';
+        actionLabel.innerText = 'METEOR STRIKE!';
+      }
+
+      detailModal.show();
+    }
+
+    function startFocusTimer() {
+      isTimerRunning = true;
+      document.getElementById('btnToggleFocusTimer').innerHTML = '<i class="fa-solid fa-pause me-2"></i> Pause';
+      focusTimerInterval = setInterval(() => {
+        if (focusRemaining > 0) {
+          focusRemaining--;
+          updateTimerDisplay();
+        } else {
+          pauseFocusTimer();
+          triggerMeteorDestruction();
+        }
+      }, 1000);
+    }
+
+    function pauseFocusTimer() {
+      isTimerRunning = false;
+      clearInterval(focusTimerInterval);
+      document.getElementById('btnToggleFocusTimer').innerHTML = '<i class="fa-solid fa-play me-2"></i> Resume';
+    }
+
+    function resetFocusTimer() {
+      pauseFocusTimer();
+      focusRemaining = TOTAL_SECONDS;
+      document.getElementById('btnToggleFocusTimer').innerHTML = '<i class="fa-solid fa-play me-2"></i> Start';
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(focusRemaining / 60);
+      const secs = focusRemaining % 60;
+      document.getElementById('focusTimerDisplay').innerText = 
+        `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+      const progressFraction = (TOTAL_SECONDS - focusRemaining) / TOTAL_SECONDS;
+      const offset = RING_CIRCUMFERENCE * (1 - progressFraction);
+      document.getElementById('timerProgressRing').style.strokeDashoffset = offset;
+    }
+
+    function fetchTasksData() {
+      fetch('/api/tasks')
+        .then(res => res.json())
+        .then(data => {
+          allTasksData = data;
+          updateKPIs(data);
+          drawWheel();
+          if (!document.getElementById('matrixViewContainer').classList.contains('d-none')) {
+            renderEisenhowerMatrix();
+          }
+        });
+    }
+
+    function updateKPIs(data) {
+      const total = data.length;
+      const completed = data.filter(t => t.completed).length;
+      const pending = total - completed;
+      const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      document.getElementById('stat-total').innerText = total;
+      document.getElementById('stat-completed').innerText = completed;
+      document.getElementById('stat-pending').innerText = pending;
+      document.getElementById('stat-progress-text').innerText = `${rate}%`;
+      document.getElementById('stat-progress-bar').style.width = `${rate}%`;
+    }
+  </script>
+</body>
+</html>
