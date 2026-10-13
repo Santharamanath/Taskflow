@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
 ENV TZ="Asia/Kolkata"
-ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=true -Duser.timezone=Asia/Kolkata"
+ENV JAVA_TOOL_OPTIONS="-Djava.net.preferIPv4Stack=false -Duser.timezone=Asia/Kolkata"
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
