@@ -18,42 +18,60 @@ import java.util.Map;
 @Service
 public class EmailService {
 
-    @Value("${RESEND_API_KEY:}")
-    private String resendApiKey;
+    @Value("${BREVO_API_KEY:}")
+    private String brevoApiKey;
+
+    @Value("${BREVO_SENDER_EMAIL:}")
+    private String senderEmail;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    // Core method that calls Resend's HTTPS API
+    // Core method: sends via Brevo's HTTPS REST API (Port 443)
     public void sendEmail(String to, String subject, String body) {
-        if (resendApiKey == null || resendApiKey.isBlank()) {
-            System.err.println("RESEND_API_KEY is missing in Railway variables!");
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            System.err.println("BREVO_API_KEY is missing in Railway variables!");
             return;
         }
 
-        String url = "https://api.resend.com/emails";
+        if (senderEmail == null || senderEmail.isBlank()) {
+            System.err.println("BREVO_SENDER_EMAIL is missing in Railway variables!");
+            return;
+        }
+
+        String url = "https://api.brevo.com/v3/smtp/email";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(resendApiKey);
+        headers.set("api-key", brevoApiKey);
 
+        // Sender details (must match your Brevo verified login email)
+        Map<String, String> sender = new HashMap<>();
+        sender.put("name", "TaskFlow");
+        sender.put("email", senderEmail);
+
+        // Recipient details (any user's email)
+        Map<String, String> recipient = new HashMap<>();
+        recipient.put("email", to);
+
+        // Construct request payload
         Map<String, Object> payload = new HashMap<>();
-        payload.put("from", "TaskFlow <onboarding@resend.dev>");
-        payload.put("to", Collections.singletonList(to));
+        payload.put("sender", sender);
+        payload.put("to", Collections.singletonList(recipient));
         payload.put("subject", subject);
-        payload.put("text", body);
+        payload.put("textContent", body);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
-            System.out.println("Email sent successfully via Resend API: " + response.getBody());
+            System.out.println("Email sent successfully via Brevo API: " + response.getBody());
         } catch (Exception e) {
-            System.err.println("Failed to send email via Resend API: " + e.getMessage());
+            System.err.println("Failed to send email via Brevo API: " + e.getMessage());
         }
     }
 
-    // Called by TaskAutomationScheduler line 48 for upcoming deadlines
+    // Called by TaskAutomationScheduler for upcoming deadlines
     public void sendReminder(String to, String taskTitle, LocalDateTime deadline) {
         String formattedDate = (deadline != null) ? deadline.format(FORMATTER) : "soon";
         String subject = "Upcoming Deadline Reminder: " + taskTitle;
