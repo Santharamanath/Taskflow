@@ -23,7 +23,7 @@ public class EmailService {
 
     public void sendEmail(String to, String subject, String body) {
         if (resendApiKey == null || resendApiKey.isBlank()) {
-            System.err.println("RESEND_API_KEY is missing! Please configure it in Railway.");
+            System.err.println("RESEND_API_KEY is missing in Railway variables!");
             return;
         }
 
@@ -34,16 +34,15 @@ public class EmailService {
         headers.setBearerAuth(resendApiKey);
 
         Map<String, Object> payload = new HashMap<>();
-        // onboarding@resend.dev is Resend's default free testing address
         payload.put("from", "TaskFlow <onboarding@resend.dev>");
         payload.put("to", Collections.singletonList(to));
         payload.put("subject", subject);
         payload.put("text", body);
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.postForEntity(url, entity, String.class);
+            ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
             System.out.println("Email sent successfully via Resend API: " + response.getBody());
         } catch (Exception e) {
             System.err.println("Failed to send email via Resend API: " + e.getMessage());
