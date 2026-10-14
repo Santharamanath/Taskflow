@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -33,7 +34,7 @@ public class EmailService {
         headers.setBearerAuth(resendApiKey);
 
         Map<String, Object> payload = new HashMap<>();
-        // onboarding@resend.dev is Resend's default sender for testing
+        // onboarding@resend.dev is Resend's default free testing address
         payload.put("from", "TaskFlow <onboarding@resend.dev>");
         payload.put("to", Collections.singletonList(to));
         payload.put("subject", subject);
@@ -47,5 +48,23 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("Failed to send email via Resend API: " + e.getMessage());
         }
+    }
+
+    public void sendMorningBriefing(String to, String userName, List<?> tasks) {
+        StringBuilder body = new StringBuilder();
+        body.append("Good morning, ").append(userName).append("!\n\n");
+        body.append("Here is your daily task summary:\n");
+
+        if (tasks == null || tasks.isEmpty()) {
+            body.append("You have no pending tasks scheduled for today.\n");
+        } else {
+            for (Object task : tasks) {
+                body.append("• ").append(task.toString()).append("\n");
+            }
+        }
+
+        body.append("\nBest regards,\nTaskFlow Team");
+
+        sendEmail(to, "Your Daily Morning Briefing - TaskFlow", body.toString());
     }
 }
