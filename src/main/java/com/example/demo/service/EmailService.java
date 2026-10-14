@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +22,9 @@ public class EmailService {
     private String resendApiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    // Core method that calls Resend's HTTPS API
     public void sendEmail(String to, String subject, String body) {
         if (resendApiKey == null || resendApiKey.isBlank()) {
             System.err.println("RESEND_API_KEY is missing in Railway variables!");
@@ -49,6 +53,25 @@ public class EmailService {
         }
     }
 
+    // Called by TaskAutomationScheduler line 48 for upcoming deadlines
+    public void sendReminder(String to, String taskTitle, LocalDateTime deadline) {
+        String formattedDate = (deadline != null) ? deadline.format(FORMATTER) : "soon";
+        String subject = "Upcoming Deadline Reminder: " + taskTitle;
+        String body = "Hello,\n\nThis is a reminder that your task \"" + taskTitle 
+                    + "\" has an upcoming deadline on " + formattedDate + ".\n\nBest regards,\nTaskFlow Team";
+        sendEmail(to, subject, body);
+    }
+
+    // Called by TaskAutomationScheduler for overdue alerts
+    public void sendOverdueAlert(String to, String taskTitle, LocalDateTime deadline) {
+        String formattedDate = (deadline != null) ? deadline.format(FORMATTER) : "earlier";
+        String subject = "Task Overdue Alert: " + taskTitle;
+        String body = "Hello,\n\nYour task \"" + taskTitle 
+                    + "\" was due on " + formattedDate + " and has passed its deadline.\n\nBest regards,\nTaskFlow Team";
+        sendEmail(to, subject, body);
+    }
+
+    // Called by TaskAutomationScheduler for daily summaries
     public void sendMorningBriefing(String to, String userName, List<?> tasks) {
         StringBuilder body = new StringBuilder();
         body.append("Good morning, ").append(userName).append("!\n\n");
@@ -63,7 +86,6 @@ public class EmailService {
         }
 
         body.append("\nBest regards,\nTaskFlow Team");
-
         sendEmail(to, "Your Daily Morning Briefing - TaskFlow", body.toString());
     }
 }
